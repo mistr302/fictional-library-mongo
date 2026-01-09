@@ -7,8 +7,8 @@ const router = express.Router();
  * Retrieves all books
  */
 router.get('/books', (req, res) => {
-  // TODO: Implement get all books logic
-  res.status(501).json({ message: 'Not Implemented' });
+    // TODO: Implement get all books logic
+    res.status(501).json({ message: 'Not Implemented' });
 });
 
 /**
@@ -16,8 +16,8 @@ router.get('/books', (req, res) => {
  * Creates a new book
  */
 router.post('/books', (req, res) => {
-  // TODO: Implement create book logic
-  res.status(501).json({ message: 'Not Implemented' });
+    // TODO: Implement create book logic
+    res.status(501).json({ message: 'Not Implemented' });
 });
 
 /**
@@ -25,8 +25,8 @@ router.post('/books', (req, res) => {
  * Updates a book by ID
  */
 router.put('/books/:id', (req, res) => {
-  // TODO: Implement update book logic
-  res.status(501).json({ message: 'Not Implemented' });
+    // TODO: Implement update book logic
+    res.status(501).json({ message: 'Not Implemented' });
 });
 
 /**
@@ -34,8 +34,8 @@ router.put('/books/:id', (req, res) => {
  * Deletes a book by ID
  */
 router.delete('/books/:id', (req, res) => {
-  // TODO: Implement delete book logic
-  res.status(501).json({ message: 'Not Implemented' });
+    // TODO: Implement delete book logic
+    res.status(501).json({ message: 'Not Implemented' });
 });
 
 export { router as bookRouter };

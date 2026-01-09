@@ -24,7 +24,7 @@
             qwen-code
             # Node.js and related tools
             nodejs
-
+            nodemon
             # TypeScript and development tools
             typescript
 
