@@ -11,5 +11,4 @@ app.use('/api', authRouter);
 app.use('/api', bookRouter);
 app.use('/api', readerRouter);
 app.use('/api', loanRouter);
-
 export { app };
