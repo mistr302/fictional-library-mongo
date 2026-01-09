@@ -1,9 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import { Administrator, Reader, Book, Loan } from '../types/databaseTypes';
 
-// Get MongoDB URL and database name from environment variables
-const MONGODB_URL = process.env.MONGO_URL || 'mongodb://localhost:27017';
-const DATABASE_NAME = process.env.DATABASE_NAME || 'library_db';
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -18,8 +15,11 @@ let loans: Collection<Loan> | null = null;
 export const connectDB = async (): Promise<void> => {
     if (client) return; // Already connected
 
+    // Get MongoDB URL and database name from environment variables
+    const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017';
+    const DATABASE_NAME = process.env.DATABASE_NAME || 'library_db';
     try {
-        client = new MongoClient(MONGODB_URL);
+        client = new MongoClient(MONGO_URL);
         await client.connect();
 
         db = client.db(DATABASE_NAME);
