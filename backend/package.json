@@ -7,6 +7,7 @@
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
+    "create-admin": "ts-node src/createAdmin.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -15,18 +16,23 @@
     "backend",
     "library"
   ],
-  "author": "Your Name",
+  "author": "Mistr & Tondik <3",
   "license": "MIT",
   "dependencies": {
-    "@types/express": "^4.17.17",
-    "@types/node": "^18.15.11",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
-    "mongodb": "^7.0.0",
-    "typescript": "^5.0.4"
+    "express-jwt": "^8.5.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.0.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/dotenv": "^6.1.1",
-    "ts-node": "^10.9.1"
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^18.15.11",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   }
 }

@@ -29,7 +29,7 @@ Each endpoint can return these status codes on failure unless stated otherwise:
 
 ### Endpoints
 
-- POST /api/login -> 200 Cookie-Set: auth-token
+- POST /api/auth/login -> 200 Cookie-Set: auth-token
 
 - GET /api/books, CRUD(POST /api/books, PUT /api/books/:id, DELETE /api/books/:id)
 
