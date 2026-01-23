@@ -1,10 +1,12 @@
-import { Button } from "@/components/ui/button"
-
+// import { Button } from "@/components/ui/button"
+import { Route, Routes } from "react-router"
+import LoginPage from "./pages/login/page"
 function App() {
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center">
-            <Button>Click me</Button>
-        </div>
+        <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<p>Root</p>} />
+        </Routes>
     )
 }
 
