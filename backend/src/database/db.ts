@@ -44,21 +44,27 @@ export const connectDB = async (): Promise<void> => {
  * Setup indexes for collections
  */
 const setupIndexes = async (): Promise<void> => {
-    if (!readers || !books || !loans) return;
-    // Create unique index for library card numbers
-    await readers.createIndex({ libraryCardNumber: 1 }, { unique: true });
+    if (!administrators || !readers || !books || !loans) return;
 
-    // Create index for book titles and authors for faster search
-    await books.createIndex({ title: 1 });
-    await books.createIndex({ author: 1 });
+    try {
+        // Create unique indexes to ensure uniqueness
+        await administrators.createIndex({ email: 1 }, { unique: true });
+        await readers.createIndex({ libraryCardNumber: 1 }, { unique: true });
 
-    // Create indexes for loan queries
-    await loans.createIndex({ readerId: 1 });
-    await loans.createIndex({ bookId: 1 });
-    await loans.createIndex({ borrowedAt: 1 });
-    await loans.createIndex({ dueDate: 1 });
-    await loans.createIndex({ returnedAt: 1 });
+        // Create index for book titles and authors for faster search
+        await books.createIndex({ title: 1 });
+        await books.createIndex({ author: 1 });
 
+        // Create indexes for loan queries
+        await loans.createIndex({ readerId: 1 });
+        await loans.createIndex({ bookId: 1 });
+        await loans.createIndex({ borrowedAt: 1 });
+        await loans.createIndex({ dueDate: 1 });
+        await loans.createIndex({ returnedAt: 1 });
+    } catch (error: any) {
+        console.warn('Warning: Could not create indexes. This may affect performance.', error.message);
+        // Continue without throwing error to allow admin creation to proceed
+    }
 };
 
 /**
