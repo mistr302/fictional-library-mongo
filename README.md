@@ -29,13 +29,27 @@ Each endpoint can return these status codes on failure unless stated otherwise:
 
 ### Endpoints
 
+#### General
+
+{ username, password }
 - POST /api/auth/login -> 200 Cookie-Set: auth-token
 
-- GET /api/books, CRUD(POST /api/books, PUT /api/books/:id, DELETE /api/books/:id)
+- CRUD /api/books =  GET /api/books, POST /api/books, PUT /api/books?id=id, DELETE /api/books?id=id
 
-- GET /api/readers, POST /api/readers
+- CRUD /api/readers =  GET /api/readers, POST /api/readers, PUT /api/readers?id=id, DELETE /api/readers?id=id
 
-- POST /api/loans (create a loan), POST /api/loans/:id/return (return loan)
+{ book_id, reader_id }
+POST /api/loans (create a loan)
+
+GET /api/loans/:id/return (return loan)
+
+#### Searching & Filtering
+
+GET /api/readers/:id/active-loans -> BorrowingRecords[]
+GET /api/readers?search="" -> Reader[]
+
+GET /api/books?id=id -> (Book + BorrowRecord[]) | null
+GET /api/books?search=""&is_borrowed=false/true -> (Book + borrowingReader?)[]
 
 ### MongoDB collection definitions
 
