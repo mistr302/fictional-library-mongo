@@ -28,6 +28,16 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
+// Define BOOK_STATE enum
+const BOOK_STATE = {
+  NEW: 'new',
+  LIKE_NEW: 'like_new',
+  GOOD: 'good',
+  ACCEPTABLE: 'acceptable',
+  POOR: 'poor',
+  DAMAGED: 'damaged'
+};
+
 // Define Schemas and Models
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -35,7 +45,12 @@ const bookSchema = new mongoose.Schema({
   year: { type: Number, required: true },
   genre: { type: String, required: true },
   availableCopies: { type: Number, required: true },
-  totalCopies: { type: Number, required: true }
+  totalCopies: { type: Number, required: true },
+  state: {
+    type: String,
+    enum: Object.values(BOOK_STATE),
+    default: BOOK_STATE.GOOD
+  }
 });
 
 const readerSchema = new mongoose.Schema({
@@ -99,7 +114,8 @@ app.post('/api/books', async (req, res) => {
       year: req.body.year,
       genre: req.body.genre,
       availableCopies: req.body.availableCopies,
-      totalCopies: req.body.totalCopies
+      totalCopies: req.body.totalCopies,
+      state: req.body.state || BOOK_STATE.GOOD
     });
 
     const newBook = await book.save();
@@ -122,6 +138,7 @@ app.put('/api/books/:id', async (req, res) => {
     book.genre = req.body.genre;
     book.availableCopies = req.body.availableCopies;
     book.totalCopies = req.body.totalCopies;
+    book.state = req.body.state;
 
     const updatedBook = await book.save();
     res.json(updatedBook);

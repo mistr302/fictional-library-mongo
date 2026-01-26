@@ -7,11 +7,12 @@
 {
   _id: ObjectId,
   title: String,           // Název knihy
-  author: String,          // Autor knihy  
+  author: String,          // Autor knihy
   year: Number,            // Rok vydání
   genre: String,           // Žánr knihy
   availableCopies: Number, // Počet dostupných kusů
-  totalCopies: Number      // Celkový počet kusů
+  totalCopies: Number,     // Celkový počet kusů
+  state: String            // Stav knihy (new, like_new, good, acceptable, poor, damaged)
 }
 ```
 

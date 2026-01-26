@@ -23,7 +23,8 @@ db.books.insertMany([
     "year": 1954,
     "genre": "Fantasy",
     "availableCopies": 3,
-    "totalCopies": 3
+    "totalCopies": 3,
+    "state": "good"
   },
   {
     "title": "1984",
@@ -31,7 +32,8 @@ db.books.insertMany([
     "year": 1949,
     "genre": "Dystopia",
     "availableCopies": 2,
-    "totalCopies": 2
+    "totalCopies": 2,
+    "state": "acceptable"
   }
 ])
 

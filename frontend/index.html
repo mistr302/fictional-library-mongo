@@ -94,6 +94,17 @@
                                         <label for="book-total" class="form-label">Celkové kopie</label>
                                         <input type="number" class="form-control" id="book-total" required>
                                     </div>
+                                    <div class="mb-3">
+                                        <label for="book-state" class="form-label">Stav knihy</label>
+                                        <select class="form-select" id="book-state" required>
+                                            <option value="new">Nová</option>
+                                            <option value="like_new">Jako nová</option>
+                                            <option value="good" selected>Dobrá</option>
+                                            <option value="acceptable">Přijatelná</option>
+                                            <option value="poor">Slabá</option>
+                                            <option value="damaged">Poškozená</option>
+                                        </select>
+                                    </div>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -269,6 +280,7 @@
         const bookGenreEl = document.getElementById('book-genre');
         const bookAvailableEl = document.getElementById('book-available');
         const bookTotalEl = document.getElementById('book-total');
+        const bookStateEl = document.getElementById('book-state');
         const bookIdEl = document.getElementById('book-id');
 
         const readerModalEl = new bootstrap.Modal(document.getElementById('readerModal'));
@@ -328,6 +340,23 @@
                 
                 booksListEl.innerHTML = '';
                 books.forEach(book => {
+                    // Format book state for display
+                    const stateLabels = {
+                        'new': 'Nová',
+                        'like_new': 'Jako nová',
+                        'good': 'Dobrá',
+                        'acceptable': 'Přijatelná',
+                        'poor': 'Slabá',
+                        'damaged': 'Poškozená'
+                    };
+                    const stateDisplay = stateLabels[book.state] || book.state;
+
+                    // Determine badge class based on state
+                    let stateClass = 'bg-info';
+                    if (book.state === 'new' || book.state === 'like_new') stateClass = 'bg-success';
+                    else if (book.state === 'poor') stateClass = 'bg-warning';
+                    else if (book.state === 'damaged') stateClass = 'bg-danger';
+
                     const bookCard = document.createElement('div');
                     bookCard.className = 'col-12';
                     bookCard.innerHTML = `
@@ -340,6 +369,7 @@
                                         <p class="text-muted mb-1"><strong>Rok:</strong> ${book.year}</p>
                                         <p class="text-muted mb-1"><strong>Žánr:</strong> ${book.genre}</p>
                                         <p><strong>Dostupné kopie:</strong> ${book.availableCopies}/${book.totalCopies}</p>
+                                        <p><strong>Stav:</strong> <span class="badge ${stateClass}">${stateDisplay}</span></p>
                                     </div>
                                     <div class="col-md-4 text-end">
                                         <button class="btn btn-sm btn-outline-primary" onclick="editBook('${book._id}')">Upravit</button>
@@ -595,6 +625,7 @@
                     bookGenreEl.value = book.genre;
                     bookAvailableEl.value = book.availableCopies;
                     bookTotalEl.value = book.totalCopies;
+                    bookStateEl.value = book.state || 'good'; // Default to 'good' if no state set
                     document.getElementById('bookModalLabel').textContent = 'Upravit knihu';
                     bookModalEl.show();
                 })
@@ -609,7 +640,8 @@
                 year: parseInt(bookYearEl.value),
                 genre: bookGenreEl.value,
                 availableCopies: parseInt(bookAvailableEl.value),
-                totalCopies: parseInt(bookTotalEl.value)
+                totalCopies: parseInt(bookTotalEl.value),
+                state: bookStateEl.value
             };
             
             try {
