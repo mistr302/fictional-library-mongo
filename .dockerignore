@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+MONGODB_SCHEMA.md
+.env
+.dockerignore
+*.md
+node_modules
+npm-debug.log
+Dockerfile*
+.dockerignore

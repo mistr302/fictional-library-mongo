@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: library_mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - library_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: library_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://admin:password@mongo:27017/library_db?authSource=admin
+    networks:
+      - library_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/api/books"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: library_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - library_network
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+
+networks:
+  library_network:
+    driver: bridge

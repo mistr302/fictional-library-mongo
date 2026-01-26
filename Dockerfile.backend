@@ -1,0 +1,23 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install netcat for health check
+RUN apk add --no-cache netcat-openbsd
+
+# Copy package files
+COPY ./backend/package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy application code
+COPY ./backend/. .
+
+EXPOSE 5000
+
+# Add a health check script to wait for MongoDB
+RUN printf '#!/bin/sh\nwhile ! nc -z mongo 27017; do sleep 1; done\n' > /wait-for-mongo.sh && \
+    chmod +x /wait-for-mongo.sh
+
+CMD ["sh", "-c", "/wait-for-mongo.sh && node server.js"]

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Školní knihovna</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { padding-top: 20px; }
+        .nav-tabs { margin-bottom: 20px; }
+        .book-card { margin-bottom: 15px; border-left: 4px solid #007bff; }
+        .loan-active { background-color: #fff3cd; border-left: 4px solid #ffc107; }
+        .btn-sm { margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Školní knihovna</h1>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">Knihy</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="loans-tab" data-bs-toggle="tab" data-bs-target="#loans" type="button" role="tab">Výpůjčky</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="book-history-tab" data-bs-toggle="tab" data-bs-target="#book-history" type="button" role="tab">Historie knih</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="readers-tab" data-bs-toggle="tab" data-bs-target="#readers" type="button" role="tab">Čtenáři</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Books Tab -->
+            <div class="tab-pane fade show active" id="books" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" id="book-search" class="form-control" placeholder="Hledat knihu...">
+                    </div>
+                    <div class="col-md-4">
+                        <select id="genre-filter" class="form-select">
+                            <option value="">Všechny žánry</option>
+                            <option value="román">Román</option>
+                            <option value="poezie">Poezie</option>
+                            <option value="drama">Drama</option>
+                            <option value="encyklopedie">Encyklopedie</option>
+                            <option value="učebnice">Učebnice</option>
+                            <option value="sci-fi">Sci-fi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="add-book-btn" class="btn btn-primary w-100">Přidat knihu</button>
+                    </div>
+                </div>
+                
+                <div id="books-list" class="row">
+                    <!-- Books will be loaded here -->
+                </div>
+                
+                <!-- Add/Edit Book Modal -->
+                <div class="modal fade" id="bookModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="bookModalLabel">Přidat knihu</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="book-form">
+                                    <input type="hidden" id="book-id">
+                                    <div class="mb-3">
+                                        <label for="book-title" class="form-label">Název</label>
+                                        <input type="text" class="form-control" id="book-title" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="book-author" class="form-label">Autor</label>
+                                        <input type="text" class="form-control" id="book-author" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="book-year" class="form-label">Rok vydání</label>
+                                        <input type="number" class="form-control" id="book-year" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="book-genre" class="form-label">Žánr</label>
+                                        <input type="text" class="form-control" id="book-genre" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="book-available" class="form-label">Dostupné kopie</label>
+                                        <input type="number" class="form-control" id="book-available" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="book-total" class="form-label">Celkové kopie</label>
+                                        <input type="number" class="form-control" id="book-total" required>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+                                <button type="button" class="btn btn-primary" id="save-book-btn">Uložit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loans Tab -->
+            <div class="tab-pane fade" id="loans" role="tabpanel">
+                <h3>Seznam výpůjček</h3>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Vypůjčit knihu</h5>
+                                <form id="loan-form">
+                                    <div class="mb-3">
+                                        <label for="loan-book" class="form-label">Vybrat knihu</label>
+                                        <select class="form-select" id="loan-book" required></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="loan-reader" class="form-label">Vybrat čtenáře</label>
+                                        <select class="form-select" id="loan-reader" required></select>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Vypůjčit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Historie výpůjček</h5>
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label for="history-reader-select" class="form-label">Vybrat čtenáře</label>
+                                        <select class="form-select" id="history-reader-select">
+                                            <option value="">Vyberte čtenáře...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="reader-loans-history">
+                                    <p>Vyberte čtenáře pro zobrazení historie jeho výpůjček</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5>Aktuálně vypůjčené knihy</h5>
+                        <div id="active-loans-list">
+                            <!-- Active loans will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book History Tab -->
+            <div class="tab-pane fade" id="book-history" role="tabpanel">
+                <h3>Historie výpůjček knih</h3>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="book-history-select" class="form-label">Vybrat knihu</label>
+                                        <select class="form-select" id="book-history-select">
+                                            <option value="">Vyberte knihu...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <button id="view-book-history-btn" class="btn btn-primary w-100">Zobrazit historii</button>
+                                    </div>
+                                </div>
+
+                                <div id="book-loans-history">
+                                    <p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení výpůjček této knihy</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Readers Tab -->
+            <div class="tab-pane fade" id="readers" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-10">
+                        <input type="text" id="reader-search" class="form-control" placeholder="Hledat čtenáře...">
+                    </div>
+                    <div class="col-md-2">
+                        <button id="add-reader-btn" class="btn btn-primary w-100">Přidat čtenáře</button>
+                    </div>
+                </div>
+                
+                <div id="readers-list" class="row">
+                    <!-- Readers will be loaded here -->
+                </div>
+                
+                <!-- Add/Edit Reader Modal -->
+                <div class="modal fade" id="readerModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="readerModalLabel">Přidat čtenáře</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="reader-form">
+                                    <input type="hidden" id="reader-id">
+                                    <div class="mb-3">
+                                        <label for="reader-name" class="form-label">Jméno</label>
+                                        <input type="text" class="form-control" id="reader-name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reader-class" class="form-label">Třída</label>
+                                        <input type="text" class="form-control" id="reader-class" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="reader-email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="reader-email" required>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+                                <button type="button" class="btn btn-primary" id="save-reader-btn">Uložit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API base URL
+        const API_BASE = 'http://localhost:5000/api';
+        
+        // DOM Elements
+        const booksListEl = document.getElementById('books-list');
+        const readersListEl = document.getElementById('readers-list');
+        const bookSearchEl = document.getElementById('book-search');
+        const genreFilterEl = document.getElementById('genre-filter');
+        const readerSearchEl = document.getElementById('reader-search');
+        const loanFormEl = document.getElementById('loan-form');
+        const loanBookEl = document.getElementById('loan-book');
+        const loanReaderEl = document.getElementById('loan-reader');
+        const activeLoansListEl = document.getElementById('active-loans-list');
+        const readerLoansHistoryEl = document.getElementById('reader-loans-history');
+        const historyReaderSelectEl = document.getElementById('history-reader-select');
+        const bookHistorySelectEl = document.getElementById('book-history-select');
+        const viewBookHistoryBtnEl = document.getElementById('view-book-history-btn');
+        const bookLoansHistoryEl = document.getElementById('book-loans-history');
+
+        // Modal elements
+        const bookModalEl = new bootstrap.Modal(document.getElementById('bookModal'));
+        const bookFormEl = document.getElementById('book-form');
+        const bookTitleEl = document.getElementById('book-title');
+        const bookAuthorEl = document.getElementById('book-author');
+        const bookYearEl = document.getElementById('book-year');
+        const bookGenreEl = document.getElementById('book-genre');
+        const bookAvailableEl = document.getElementById('book-available');
+        const bookTotalEl = document.getElementById('book-total');
+        const bookIdEl = document.getElementById('book-id');
+
+        const readerModalEl = new bootstrap.Modal(document.getElementById('readerModal'));
+        const readerFormEl = document.getElementById('reader-form');
+        const readerNameEl = document.getElementById('reader-name');
+        const readerClassEl = document.getElementById('reader-class');
+        const readerEmailEl = document.getElementById('reader-email');
+        const readerIdEl = document.getElementById('reader-id');
+
+        // Current edit state
+        let currentBook = null;
+        let currentReader = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooks();
+            loadReaders();
+            loadActiveLoans();
+            loadReadersForHistoryDropdown(); // Load readers for history dropdown
+            loadBooksForHistoryDropdown(); // Load books for book history dropdown
+
+            // Event listeners
+            document.getElementById('add-book-btn').addEventListener('click', openAddBookModal);
+            document.getElementById('save-book-btn').addEventListener('click', saveBook);
+            document.getElementById('add-reader-btn').addEventListener('click', openAddReaderModal);
+            document.getElementById('save-reader-btn').addEventListener('click', saveReader);
+            loanFormEl.addEventListener('submit', borrowBook);
+            bookSearchEl.addEventListener('input', loadBooks);
+            genreFilterEl.addEventListener('change', loadBooks);
+            readerSearchEl.addEventListener('input', loadReaders);
+            historyReaderSelectEl.addEventListener('change', handleReaderHistoryChange);
+            viewBookHistoryBtnEl.addEventListener('click', handleViewBookHistory);
+
+            // Load books and readers for loan form
+            loadBooksForLoanForm();
+            loadReadersForLoanForm();
+        });
+        
+        // Load books with filters
+        async function loadBooks() {
+            const searchTerm = bookSearchEl.value.trim();
+            const genre = genreFilterEl.value;
+            
+            let url = `${API_BASE}/books`;
+            const params = new URLSearchParams();
+            
+            if (searchTerm) params.append('search', searchTerm);
+            if (genre) params.append('genre', genre);
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            try {
+                const response = await fetch(url);
+                const books = await response.json();
+                
+                booksListEl.innerHTML = '';
+                books.forEach(book => {
+                    const bookCard = document.createElement('div');
+                    bookCard.className = 'col-12';
+                    bookCard.innerHTML = `
+                        <div class="card book-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>${book.title}</h5>
+                                        <p class="text-muted mb-1"><strong>Autor:</strong> ${book.author}</p>
+                                        <p class="text-muted mb-1"><strong>Rok:</strong> ${book.year}</p>
+                                        <p class="text-muted mb-1"><strong>Žánr:</strong> ${book.genre}</p>
+                                        <p><strong>Dostupné kopie:</strong> ${book.availableCopies}/${book.totalCopies}</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editBook('${book._id}')">Upravit</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBook('${book._id}')">Smazat</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    booksListEl.appendChild(bookCard);
+                });
+            } catch (error) {
+                console.error('Error loading books:', error);
+            }
+        }
+        
+        // Load readers
+        async function loadReaders() {
+            const searchTerm = readerSearchEl.value.trim();
+            
+            let url = `${API_BASE}/readers`;
+            if (searchTerm) {
+                // Simple client-side filter for demo purposes
+                try {
+                    const response = await fetch(`${API_BASE}/readers`);
+                    const allReaders = await response.json();
+                    
+                    const filteredReaders = allReaders.filter(reader => 
+                        reader.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        reader.class.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        reader.email.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                    
+                    readersListEl.innerHTML = '';
+                    filteredReaders.forEach(reader => {
+                        const readerCard = document.createElement('div');
+                        readerCard.className = 'col-12';
+                        readerCard.innerHTML = `
+                            <div class="card book-card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5>${reader.name}</h5>
+                                            <p class="text-muted mb-1"><strong>Třída:</strong> ${reader.class}</p>
+                                            <p class="text-muted mb-1"><strong>Email:</strong> ${reader.email}</p>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editReader('${reader._id}')">Upravit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteReader('${reader._id}')">Smazat</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        readersListEl.appendChild(readerCard);
+                    });
+                } catch (error) {
+                    console.error('Error loading readers:', error);
+                }
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/readers`);
+                const readers = await response.json();
+                
+                readersListEl.innerHTML = '';
+                readers.forEach(reader => {
+                    const readerCard = document.createElement('div');
+                    readerCard.className = 'col-12';
+                    readerCard.innerHTML = `
+                        <div class="card book-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5>${reader.name}</h5>
+                                        <p class="text-muted mb-1"><strong>Třída:</strong> ${reader.class}</p>
+                                        <p class="text-muted mb-1"><strong>Email:</strong> ${reader.email}</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editReader('${reader._id}')">Upravit</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReader('${reader._id}')">Smazat</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    readersListEl.appendChild(readerCard);
+                });
+            } catch (error) {
+                console.error('Error loading readers:', error);
+            }
+        }
+        
+        // Load active loans
+        async function loadActiveLoans() {
+            try {
+                const response = await fetch(`${API_BASE}/loans/active`);
+                const loans = await response.json();
+                
+                activeLoansListEl.innerHTML = '';
+                if (loans.length === 0) {
+                    activeLoansListEl.innerHTML = '<p>Nejsou žádné aktivní výpůjčky.</p>';
+                    return;
+                }
+                
+                loans.forEach(loan => {
+                    const loanCard = document.createElement('div');
+                    loanCard.className = 'card mb-2 loan-active';
+                    loanCard.innerHTML = `
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Kniha:</strong> ${loan.bookId ? loan.bookId.title : 'N/A'}<br>
+                                    <strong>Autor:</strong> ${loan.bookId ? loan.bookId.author : 'N/A'}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Čtenář:</strong> ${loan.readerId ? loan.readerId.name : 'N/A'}<br>
+                                    <strong>Třída:</strong> ${loan.readerId ? loan.readerId.class : 'N/A'}
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button class="btn btn-sm btn-warning" onclick="returnBook('${loan._id}')">Vrátit</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    activeLoansListEl.appendChild(loanCard);
+                });
+            } catch (error) {
+                console.error('Error loading active loans:', error);
+            }
+        }
+        
+        // Load books for loan form
+        async function loadBooksForLoanForm() {
+            try {
+                const response = await fetch(`${API_BASE}/books`);
+                const books = await response.json();
+                
+                loanBookEl.innerHTML = '<option value="">Vyberte knihu...</option>';
+                books.forEach(book => {
+                    if (book.availableCopies > 0) {
+                        const option = document.createElement('option');
+                        option.value = book._id;
+                        option.textContent = `${book.title} (${book.author}) - Dostupné: ${book.availableCopies}`;
+                        loanBookEl.appendChild(option);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading books for loan form:', error);
+            }
+        }
+        
+        // Load readers for loan form
+        async function loadReadersForLoanForm() {
+            try {
+                const response = await fetch(`${API_BASE}/readers`);
+                const readers = await response.json();
+                
+                loanReaderEl.innerHTML = '<option value="">Vyberte čtenáře...</option>';
+                readers.forEach(reader => {
+                    const option = document.createElement('option');
+                    option.value = reader._id;
+                    option.textContent = `${reader.name} (${reader.class})`;
+                    loanReaderEl.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading readers for loan form:', error);
+            }
+        }
+        
+        // Borrow a book
+        async function borrowBook(e) {
+            e.preventDefault();
+            
+            const bookId = loanBookEl.value;
+            const readerId = loanReaderEl.value;
+            
+            if (!bookId || !readerId) {
+                alert('Prosím vyberte knihu a čtenáře.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/loans`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bookId, readerId })
+                });
+                
+                if (response.ok) {
+                    alert('Kniha byla úspěšně vypůjčena!');
+                    loanFormEl.reset();
+                    loadActiveLoans();
+                    loadBooks();
+                    loadBooksForLoanForm(); // Refresh available books
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při vypůjčení knihy.');
+                }
+            } catch (error) {
+                console.error('Error borrowing book:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+        
+        // Return a book
+        async function returnBook(loanId) {
+            if (!confirm('Opravdu chcete vrátit tuto knihu?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/loans/${loanId}/return`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('Kniha byla úspěšně vrácena!');
+                    loadActiveLoans();
+                    loadBooks();
+                    loadBooksForLoanForm(); // Refresh available books
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při vrácení knihy.');
+                }
+            } catch (error) {
+                console.error('Error returning book:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+        
+        // Open add book modal
+        function openAddBookModal() {
+            bookFormEl.reset();
+            bookIdEl.value = '';
+            document.getElementById('bookModalLabel').textContent = 'Přidat knihu';
+            bookModalEl.show();
+        }
+        
+        // Edit book
+        function editBook(id) {
+            fetch(`${API_BASE}/books/${id}`)
+                .then(response => response.json())
+                .then(book => {
+                    currentBook = book;
+                    bookIdEl.value = book._id;
+                    bookTitleEl.value = book.title;
+                    bookAuthorEl.value = book.author;
+                    bookYearEl.value = book.year;
+                    bookGenreEl.value = book.genre;
+                    bookAvailableEl.value = book.availableCopies;
+                    bookTotalEl.value = book.totalCopies;
+                    document.getElementById('bookModalLabel').textContent = 'Upravit knihu';
+                    bookModalEl.show();
+                })
+                .catch(error => console.error('Error fetching book:', error));
+        }
+        
+        // Save book (add or update)
+        async function saveBook() {
+            const bookData = {
+                title: bookTitleEl.value,
+                author: bookAuthorEl.value,
+                year: parseInt(bookYearEl.value),
+                genre: bookGenreEl.value,
+                availableCopies: parseInt(bookAvailableEl.value),
+                totalCopies: parseInt(bookTotalEl.value)
+            };
+            
+            try {
+                let response;
+                if (bookIdEl.value) {
+                    // Update existing book
+                    response = await fetch(`${API_BASE}/books/${bookIdEl.value}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(bookData)
+                    });
+                } else {
+                    // Create new book
+                    response = await fetch(`${API_BASE}/books`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(bookData)
+                    });
+                }
+                
+                if (response.ok) {
+                    bookModalEl.hide();
+                    loadBooks();
+                    loadBooksForLoanForm(); // Refresh the book list in loan form
+                    bookFormEl.reset();
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při ukládání knihy.');
+                }
+            } catch (error) {
+                console.error('Error saving book:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+        
+        // Delete book
+        async function deleteBook(id) {
+            if (!confirm('Opravdu chcete smazat tuto knihu?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/books/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadBooks();
+                    loadBooksForLoanForm(); // Refresh the book list in loan form
+                    alert('Kniha byla úspěšně smazána.');
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při mazání knihy.');
+                }
+            } catch (error) {
+                console.error('Error deleting book:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+        
+        // Open add reader modal
+        function openAddReaderModal() {
+            readerFormEl.reset();
+            readerIdEl.value = '';
+            document.getElementById('readerModalLabel').textContent = 'Přidat čtenáře';
+            readerModalEl.show();
+        }
+        
+        // Edit reader
+        function editReader(id) {
+            fetch(`${API_BASE}/readers/${id}`)
+                .then(response => response.json())
+                .then(reader => {
+                    currentReader = reader;
+                    readerIdEl.value = reader._id;
+                    readerNameEl.value = reader.name;
+                    readerClassEl.value = reader.class;
+                    readerEmailEl.value = reader.email;
+                    document.getElementById('readerModalLabel').textContent = 'Upravit čtenáře';
+                    readerModalEl.show();
+                })
+                .catch(error => console.error('Error fetching reader:', error));
+        }
+        
+        // Save reader (add or update)
+        async function saveReader() {
+            const readerData = {
+                name: readerNameEl.value,
+                class: readerClassEl.value,
+                email: readerEmailEl.value
+            };
+            
+            try {
+                let response;
+                if (readerIdEl.value) {
+                    // Update existing reader
+                    response = await fetch(`${API_BASE}/readers/${readerIdEl.value}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(readerData)
+                    });
+                } else {
+                    // Create new reader
+                    response = await fetch(`${API_BASE}/readers`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(readerData)
+                    });
+                }
+                
+                if (response.ok) {
+                    readerModalEl.hide();
+                    loadReaders();
+                    loadReadersForLoanForm(); // Refresh the reader list in loan form
+                    readerFormEl.reset();
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při ukládání čtenáře.');
+                }
+            } catch (error) {
+                console.error('Error saving reader:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+        
+        // Delete reader
+        async function deleteReader(id) {
+            if (!confirm('Opravdu chcete smazat tohoto čtenáře?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/readers/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadReaders();
+                    loadReadersForLoanForm(); // Refresh the reader list in loan form
+                    loadReadersForHistoryDropdown(); // Refresh the history dropdown
+                    alert('Čtenář byl úspěšně smazán.');
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při mazání čtenáře.');
+                }
+            } catch (error) {
+                console.error('Error deleting reader:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+
+        // Load readers for history dropdown
+        async function loadReadersForHistoryDropdown() {
+            try {
+                const response = await fetch(`${API_BASE}/readers`);
+                const readers = await response.json();
+
+                historyReaderSelectEl.innerHTML = '<option value="">Vyberte čtenáře...</option>';
+                readers.forEach(reader => {
+                    const option = document.createElement('option');
+                    option.value = reader._id;
+                    option.textContent = `${reader.name} (${reader.class})`;
+                    historyReaderSelectEl.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading readers for history dropdown:', error);
+            }
+        }
+
+        // Load books for book history dropdown
+        async function loadBooksForHistoryDropdown() {
+            try {
+                const response = await fetch(`${API_BASE}/books`);
+                const books = await response.json();
+
+                bookHistorySelectEl.innerHTML = '<option value="">Vyberte knihu...</option>';
+                books.forEach(book => {
+                    const option = document.createElement('option');
+                    option.value = book._id;
+                    option.textContent = `${book.title} (${book.author})`;
+                    bookHistorySelectEl.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading books for history dropdown:', error);
+            }
+        }
+
+        // Handle reader history selection change
+        async function handleReaderHistoryChange() {
+            const readerId = historyReaderSelectEl.value;
+
+            if (!readerId) {
+                readerLoansHistoryEl.innerHTML = '<p>Vyberte čtenáře pro zobrazení historie jeho výpůjček</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/readers/${readerId}/loans`);
+                const loans = await response.json();
+
+                if (loans.length === 0) {
+                    readerLoansHistoryEl.innerHTML = '<p>Tento čtenář nemá žádné výpůjčky.</p>';
+                    return;
+                }
+
+                let loansHtml = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Kniha</th><th>Autor</th><th>Datum vypůjčení</th><th>Datum vrácení</th><th>Status</th></tr></thead><tbody>';
+
+                loans.forEach(loan => {
+                    const borrowDate = new Date(loan.borrowDate).toLocaleDateString('cs-CZ');
+                    const returnDate = loan.returnDate ? new Date(loan.returnDate).toLocaleDateString('cs-CZ') : 'Nevráceno';
+                    const status = loan.returnDate ? 'Vráceno' : 'Vypůjčeno';
+                    const statusClass = loan.returnDate ? 'table-success' : 'table-warning';
+
+                    loansHtml += `
+                        <tr class="${statusClass}">
+                            <td>${loan.bookId ? loan.bookId.title : 'N/A'}</td>
+                            <td>${loan.bookId ? loan.bookId.author : 'N/A'}</td>
+                            <td>${borrowDate}</td>
+                            <td>${returnDate}</td>
+                            <td><span class="badge bg-${loan.returnDate ? 'success' : 'warning'}">${status}</span></td>
+                        </tr>
+                    `;
+                });
+
+                loansHtml += '</tbody></table></div>';
+                readerLoansHistoryEl.innerHTML = loansHtml;
+            } catch (error) {
+                console.error('Error loading reader history:', error);
+                readerLoansHistoryEl.innerHTML = '<p>Chyba při načítání historie výpůjček.</p>';
+            }
+        }
+
+        // Handle view book history button click
+        async function handleViewBookHistory() {
+            const bookId = bookHistorySelectEl.value;
+
+            if (!bookId) {
+                bookLoansHistoryEl.innerHTML = '<p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení výpůjček této knihy</p>';
+                return;
+            }
+
+            try {
+                // Get all loans for this book (both active and returned)
+                const response = await fetch(`${API_BASE}/books/${bookId}/loans`);
+                const bookLoans = await response.json();
+
+                if (bookLoans.length === 0) {
+                    bookLoansHistoryEl.innerHTML = '<p>Tato kniha nemá žádné výpůjčky.</p>';
+                    return;
+                }
+
+                // Get book info to display title
+                const bookResponse = await fetch(`${API_BASE}/books/${bookId}`);
+                const book = await bookResponse.json();
+
+                let loansHtml = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Čtenář</th><th>Třída</th><th>Email</th><th>Datum vypůjčení</th><th>Datum vrácení</th><th>Status</th></tr></thead><tbody>';
+
+                bookLoans.forEach(loan => {
+                    const borrowDate = new Date(loan.borrowDate).toLocaleDateString('cs-CZ');
+                    const returnDate = loan.returnDate ? new Date(loan.returnDate).toLocaleDateString('cs-CZ') : 'Nevráceno';
+                    const status = loan.returnDate ? 'Vráceno' : 'Vypůjčeno';
+                    const statusClass = loan.returnDate ? 'table-success' : 'table-warning';
+
+                    loansHtml += `
+                        <tr class="${statusClass}">
+                            <td>${loan.readerId ? loan.readerId.name : 'N/A'}</td>
+                            <td>${loan.readerId ? loan.readerId.class : 'N/A'}</td>
+                            <td>${loan.readerId ? loan.readerId.email : 'N/A'}</td>
+                            <td>${borrowDate}</td>
+                            <td>${returnDate}</td>
+                            <td><span class="badge bg-${loan.returnDate ? 'success' : 'warning'}">${status}</span></td>
+                        </tr>
+                    `;
+                });
+
+                loansHtml += '</tbody></table></div>';
+                bookLoansHistoryEl.innerHTML = `<h5>Historie výpůjček: ${book.title}</h5>` + loansHtml;
+            } catch (error) {
+                console.error('Error loading book history:', error);
+                bookLoansHistoryEl.innerHTML = '<p>Chyba při načítání historie výpůjček knihy.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
