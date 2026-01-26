@@ -20,8 +20,6 @@ import {
     SidebarMenuItem,
     SidebarRail,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
-import { AvatarBadge } from "./ui/avatar"
 
 // This is sample data.
 const data = {
@@ -32,11 +30,15 @@ const data = {
             items: [
                 {
                     title: "Books",
+                    slug: "books",
                     url: "#",
+                    is_active: false,
                 },
                 {
                     title: "Readers",
+                    slug: "readers",
                     url: "#",
+                    is_active: false,
                 },
             ],
         },
@@ -46,19 +48,31 @@ const data = {
             items: [
                 {
                     title: "Catalogue",
+                    slug: "catalogue",
                     url: "#",
+                    is_active: false,
                 },
                 {
                     title: "Active Loans",
+                    slug: "active-loans",
                     url: "#",
-                    isActive: true,
+                    is_active: false,
                 },
             ],
         },
     ],
 }
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type MySidebarProps = {
+    active: string
+}
+export function AppSidebar({ active, ...props }: React.ComponentProps<typeof Sidebar> & MySidebarProps) {
+    data.navMain.forEach(nav => {
+        nav.items.forEach(item => {
+            if (item.slug === active) {
+                item.is_active = true;
+            }
+        });
+    });
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -91,7 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <SidebarMenu>
                                         {item.items.map((item) => (
                                             <SidebarMenuItem key={item.title}>
-                                                <SidebarMenuButton asChild isActive={item.isActive}>
+                                                <SidebarMenuButton asChild isActive={item.is_active}>
                                                     <a href={item.url}>{item.title}</a>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>

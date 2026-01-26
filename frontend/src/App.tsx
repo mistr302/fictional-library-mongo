@@ -11,10 +11,9 @@ function App() {
             <Route path="/admin">
                 <Route path="books" element={<AdminSidebar />} />
                 <Route path="readers" element={<LoginPage />} />
-                <Route path="" element={<LoginPage />} />
+                <Route path="borrow" element={<BorrowPage />} />
+                <Route path="catalogue" element={<CataloguePage />} />
             </Route>
-            <Route path="/borrow" element={<BorrowPage />} />
-            <Route path="/catalogue" element={<CataloguePage />} />
             <Route path="/" element={<p>Root</p>} />
         </Routes>
     )
