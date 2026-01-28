@@ -11,6 +11,38 @@
         .book-card { margin-bottom: 15px; border-left: 4px solid #007bff; }
         .loan-active { background-color: #fff3cd; border-left: 4px solid #ffc107; }
         .btn-sm { margin-right: 5px; }
+
+        /* Custom modal styles */
+        .modal.custom-modal {
+            display: none;
+        }
+
+        .modal-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1051; /* Higher than Bootstrap's default modals */
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-backdrop.fade {
+            opacity: 0;
+            transition: opacity 0.15s linear;
+        }
+
+        .modal-backdrop.fade.show {
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -353,6 +385,312 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Reusable Alert/Confirm/Prompt Modals
+        class ModalManager {
+            constructor() {
+                this.modalContainer = null;
+                this.createModalContainer();
+            }
+
+            createModalContainer() {
+                // Create the modal container if it doesn't exist
+                if (document.getElementById('custom-modal-container')) {
+                    this.modalContainer = document.getElementById('custom-modal-container');
+                    return;
+                }
+
+                this.modalContainer = document.createElement('div');
+                this.modalContainer.id = 'custom-modal-container';
+                this.modalContainer.setAttribute('aria-hidden', 'true');
+                this.modalContainer.innerHTML = `
+                    <div id="custom-modal-overlay" class="modal-backdrop fade" style="display: none;" aria-hidden="true"></div>
+                    <div id="custom-modal-wrapper" class="modal-wrapper" style="display: none;" aria-hidden="true">
+                        <div id="custom-modal" class="modal custom-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title" aria-describedby="custom-modal-message">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 id="custom-modal-title" class="modal-title">Upozornění</h5>
+                                        <button type="button" class="btn-close" aria-label="Zavřít"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p id="custom-modal-message"></p>
+                                        <div id="custom-modal-input-container" class="mt-3" style="display: none;" role="group" aria-label="Vstupní pole">
+                                            <input type="text" id="custom-modal-input" class="form-control" placeholder="Zadejte hodnotu..." autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer" id="custom-modal-footer">
+                                        <button id="custom-modal-cancel-btn" type="button" class="btn btn-secondary">Zrušit</button>
+                                        <button id="custom-modal-confirm-btn" type="button" class="btn btn-primary">OK</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(this.modalContainer);
+
+                // Setup event listeners
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                const modalElement = document.getElementById('custom-modal');
+                const overlay = document.getElementById('custom-modal-overlay');
+                const wrapper = document.getElementById('custom-modal-wrapper');
+
+                // Close on backdrop click
+                overlay.addEventListener('click', () => {
+                    this.closeModal();
+                });
+
+                // Close on Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && wrapper.style.display !== 'none') {
+                        this.closeModal();
+                    }
+                });
+
+                // Button click handlers
+                document.getElementById('custom-modal-cancel-btn').addEventListener('click', () => {
+                    this.handleCancel();
+                });
+
+                document.getElementById('custom-modal-confirm-btn').addEventListener('click', () => {
+                    this.handleConfirm();
+                });
+
+                // Close button handler
+                document.querySelector('#custom-modal .btn-close').addEventListener('click', () => {
+                    this.closeModal();
+                });
+            }
+
+            // Private variables to store resolve/reject functions
+            resolveCallback = null;
+            rejectCallback = null;
+            modalType = null; // 'alert', 'confirm', 'prompt'
+
+            showAlert(message, title = 'Upozornění') {
+                return new Promise((resolve) => {
+                    this.resolveCallback = resolve;
+                    this.modalType = 'alert';
+
+                    this.updateModalContent(title, message, 'alert');
+                    this.showModal();
+                });
+            }
+
+            showConfirm(message, title = 'Potvrzení') {
+                return new Promise((resolve) => {
+                    this.resolveCallback = resolve;
+                    this.rejectCallback = null;
+                    this.modalType = 'confirm';
+
+                    this.updateModalContent(title, message, 'confirm');
+                    this.showModal();
+                });
+            }
+
+            showPrompt(message, title = 'Vstup', defaultValue = '') {
+                return new Promise((resolve) => {
+                    this.resolveCallback = resolve;
+                    this.modalType = 'prompt';
+
+                    this.updateModalContent(title, message, 'prompt', defaultValue);
+                    this.showModal();
+                });
+            }
+
+            updateModalContent(title, message, type, defaultValue = '') {
+                const modalTitle = document.getElementById('custom-modal-title');
+                const modalMessage = document.getElementById('custom-modal-message');
+                const inputContainer = document.getElementById('custom-modal-input-container');
+                const inputField = document.getElementById('custom-modal-input');
+                const footer = document.getElementById('custom-modal-footer');
+                const cancelButton = document.getElementById('custom-modal-cancel-btn');
+                const confirmButton = document.getElementById('custom-modal-confirm-btn');
+
+                modalTitle.textContent = title;
+                modalMessage.innerHTML = message.replace(/\n/g, '<br>'); // Support for newlines
+
+                // Show/hide input field based on type
+                if (type === 'prompt') {
+                    inputContainer.style.display = 'block';
+                    inputField.value = defaultValue;
+                    inputField.focus();
+                } else {
+                    inputContainer.style.display = 'none';
+                    inputField.value = '';
+                }
+
+                // Configure buttons based on type
+                if (type === 'alert') {
+                    // Alert: only OK button
+                    cancelButton.style.display = 'none';
+                    confirmButton.style.display = 'block';
+                    confirmButton.textContent = 'OK';
+                    setTimeout(() => {
+                        // For alert, auto-focus on OK button
+                        confirmButton.focus();
+                    }, 100);
+                } else if (type === 'confirm') {
+                    // Confirm: Cancel and OK buttons
+                    cancelButton.style.display = 'block';
+                    confirmButton.style.display = 'block';
+                    confirmButton.textContent = 'OK';
+                    cancelButton.textContent = 'Zrušit';
+                    setTimeout(() => {
+                        // For confirm, focus on Cancel button
+                        cancelButton.focus();
+                    }, 100);
+                } else if (type === 'prompt') {
+                    // Prompt: Cancel and OK buttons
+                    cancelButton.style.display = 'block';
+                    confirmButton.style.display = 'block';
+                    confirmButton.textContent = 'OK';
+                    cancelButton.textContent = 'Zrušit';
+                    setTimeout(() => {
+                        // For prompt, focus on input field
+                        inputField.focus();
+                    }, 100);
+                }
+
+                // Store type for later reference
+                this.currentType = type;
+            }
+
+            showModal() {
+                const overlay = document.getElementById('custom-modal-overlay');
+                const wrapper = document.getElementById('custom-modal-wrapper');
+                const modal = document.getElementById('custom-modal');
+
+                // Store previously focused element
+                this.previouslyFocused = document.activeElement;
+
+                // Show modal
+                overlay.classList.remove('fade');
+                wrapper.style.display = 'block';
+
+                // Force reflow
+                void overlay.offsetWidth;
+
+                // Add fade effect
+                overlay.classList.add('fade');
+                overlay.style.display = 'block';
+
+                modal.setAttribute('aria-hidden', 'false');
+                modal.style.display = 'block';
+
+                // Make sure modal is visible and focused
+                // Trap focus inside modal initially
+                this.trapFocus();
+            }
+
+            closeModal() {
+                const overlay = document.getElementById('custom-modal-overlay');
+                const wrapper = document.getElementById('custom-modal-wrapper');
+                const modal = document.getElementById('custom-modal');
+
+                // Hide modal
+                overlay.classList.remove('fade');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                wrapper.style.display = 'none';
+                overlay.style.display = 'none';
+
+                // Restore focus to previously focused element
+                if (this.previouslyFocused && typeof this.previouslyFocused.focus === 'function') {
+                    this.previouslyFocused.focus();
+                }
+
+                // Clean up
+                this.resolveCallback = null;
+                this.rejectCallback = null;
+                this.modalType = null;
+            }
+
+            handleConfirm() {
+                if (this.modalType === 'prompt') {
+                    const inputValue = document.getElementById('custom-modal-input').value;
+                    if (this.resolveCallback) {
+                        this.resolveCallback(inputValue);
+                    }
+                } else if (this.modalType === 'confirm' || this.modalType === 'alert') {
+                    if (this.resolveCallback) {
+                        this.resolveCallback(this.modalType === 'confirm' ? true : undefined);
+                    }
+                }
+                this.closeModal();
+            }
+
+            handleCancel() {
+                if (this.modalType === 'confirm') {
+                    if (this.resolveCallback) {
+                        this.resolveCallback(false);
+                    }
+                } else if (this.modalType === 'prompt') {
+                    // For prompt, return null when cancelled
+                    if (this.resolveCallback) {
+                        this.resolveCallback(null);
+                    }
+                }
+                this.closeModal();
+            }
+
+            trapFocus() {
+                const modal = document.getElementById('custom-modal');
+                const focusableElements = modal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+
+                if (focusableElements.length === 0) return;
+
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                // Focus on first element if nothing is currently focused in the modal
+                if (!modal.contains(document.activeElement)) {
+                    firstElement.focus();
+                }
+
+                // Listen for Tab key to trap focus
+                modal.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Tab') return;
+
+                    if (e.shiftKey) {
+                        // Shift + Tab pressed
+                        if (document.activeElement === firstElement) {
+                            e.preventDefault();
+                            lastElement.focus();
+                        }
+                    } else {
+                        // Tab pressed
+                        if (document.activeElement === lastElement) {
+                            e.preventDefault();
+                            firstElement.focus();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Create singleton instance
+        const modalManager = new ModalManager();
+
+        // Global functions to replace native alerts
+        function alert(message) {
+            return modalManager.showAlert(message);
+        }
+
+        function confirm(message) {
+            return modalManager.showConfirm(message);
+        }
+
+        // Note: prompt is not commonly replaced due to security concerns
+        // In this application, we don't see any prompt() usage, so we won't implement it
+        // If needed: function prompt(message, defaultValue = '') { return modalManager.showPrompt(message, 'Vstup', defaultValue); }
+
         // API base URL
         const API_BASE = 'http://localhost:5000/api';
         
@@ -698,7 +1036,7 @@
             const readerId = loanReaderEl.value;
 
             if (!bookId || !readerId) {
-                alert('Prosím vyberte knihu a čtenáře.');
+                await alert('Prosím vyberte knihu a čtenáře.');
                 return;
             }
 
@@ -712,44 +1050,45 @@
                 });
 
                 if (response.ok) {
-                    alert('Kniha byla úspěšně vypůjčena!');
+                    await alert('Kniha byla úspěšně vypůjčena!');
                     loanFormEl.reset();
                     loadActiveLoans();
                     loadBooks();
                     loadBooksForLoanForm(); // Refresh available books
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při vypůjčení knihy.');
+                    await alert(error.message || 'Chyba při vypůjčení knihy.');
                 }
             } catch (error) {
                 console.error('Error borrowing book:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
         
         // Return a book
         async function returnBook(loanId) {
-            if (!confirm('Opravdu chcete vrátit tuto knihu?')) {
+            const confirmed = await confirm('Opravdu chcete vrátit tuto knihu?');
+            if (!confirmed) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/loans/${loanId}/return`, {
                     method: 'POST'
                 });
-                
+
                 if (response.ok) {
-                    alert('Kniha byla úspěšně vrácena!');
+                    await alert('Kniha byla úspěšně vrácena!');
                     loadActiveLoans();
                     loadBooks();
                     loadBooksForLoanForm(); // Refresh available books
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při vrácení knihy.');
+                    await alert(error.message || 'Chyba při vrácení knihy.');
                 }
             } catch (error) {
                 console.error('Error returning book:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
         
@@ -830,36 +1169,37 @@
                     bookFormEl.reset();
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při ukládání knihy.');
+                    await alert(error.message || 'Chyba při ukládání knihy.');
                 }
             } catch (error) {
                 console.error('Error saving book:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
         
         // Delete book
         async function deleteBook(id) {
-            if (!confirm('Opravdu chcete smazat tuto knihu?')) {
+            const confirmed = await confirm('Opravdu chcete smazat tuto knihu?');
+            if (!confirmed) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/books/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (response.ok) {
                     loadBooks();
                     loadBooksForLoanForm(); // Refresh the book list in loan form
-                    alert('Kniha byla úspěšně smazána.');
+                    await alert('Kniha byla úspěšně smazána.');
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při mazání knihy.');
+                    await alert(error.message || 'Chyba při mazání knihy.');
                 }
             } catch (error) {
                 console.error('Error deleting book:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
         
@@ -894,7 +1234,7 @@
                 class: readerClassEl.value,
                 email: readerEmailEl.value
             };
-            
+
             try {
                 let response;
                 if (readerIdEl.value) {
@@ -916,7 +1256,7 @@
                         body: JSON.stringify(readerData)
                     });
                 }
-                
+
                 if (response.ok) {
                     readerModalEl.hide();
                     loadReaders();
@@ -924,17 +1264,18 @@
                     readerFormEl.reset();
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při ukládání čtenáře.');
+                    await alert(error.message || 'Chyba při ukládání čtenáře.');
                 }
             } catch (error) {
                 console.error('Error saving reader:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
         
         // Delete reader
         async function deleteReader(id) {
-            if (!confirm('Opravdu chcete smazat tohoto čtenáře?')) {
+            const confirmed = await confirm('Opravdu chcete smazat tohoto čtenáře?');
+            if (!confirmed) {
                 return;
             }
 
@@ -947,14 +1288,14 @@
                     loadReaders();
                     loadReadersForLoanForm(); // Refresh the reader list in loan form
                     loadReadersForHistoryDropdown(); // Refresh the history dropdown
-                    alert('Čtenář byl úspěšně smazán.');
+                    await alert('Čtenář byl úspěšně smazán.');
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při mazání čtenáře.');
+                    await alert(error.message || 'Chyba při mazání čtenáře.');
                 }
             } catch (error) {
                 console.error('Error deleting reader:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
 
@@ -1218,7 +1559,7 @@
             const bookId = physicalBookBookSelectEl.value;
 
             if (!bookId) {
-                alert('Prosím vyberte hlavní knihu.');
+                await alert('Prosím vyberte hlavní knihu.');
                 return;
             }
 
@@ -1249,7 +1590,7 @@
                                     <strong>Status:</strong> <span class="badge ${getStatusBadgeClass(pb.status)}">${getStatusLabel(pb.status)}</span>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <button class="btn btn-sm btn-outline-info" onclick="viewPhysicalBookHistory('${pb._id}', '${pb.externalId}', '${getBookStateLabel(pb.state)}', '${getStatusLabel(pb.status)}')">Historie</button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="handlePhysicalBookHistory('${pb._id}', '${pb.externalId}', '${getBookStateLabel(pb.state)}', '${getStatusLabel(pb.status)}')">Historie</button>
                                     <button class="btn btn-sm btn-outline-warning" onclick="editPhysicalBook('${pb._id}', '${pb.bookId}', '${pb.state}', '${pb.status}')">Upravit</button>
                                 </div>
                             </div>
@@ -1259,7 +1600,7 @@
                 });
             } catch (error) {
                 console.error('Error loading physical books:', error);
-                alert('Chyba při načítání fyzických kopií: ' + error.message);
+                await alert('Chyba při načítání fyzických kopií: ' + error.message);
             }
         }
 
@@ -1291,11 +1632,11 @@
         }
 
         // Open add physical book modal
-        function openAddPhysicalBookModal() {
+        async function openAddPhysicalBookModal() {
             const bookId = physicalBookBookSelectEl.value;
 
             if (!bookId) {
-                alert('Nejprve vyberte hlavní knihu.');
+                await alert('Nejprve vyberte hlavní knihu.');
                 return;
             }
 
@@ -1353,11 +1694,11 @@
                     loadPhysicalBooks();
                 } else {
                     const error = await response.json();
-                    alert(error.message || 'Chyba při ukládání fyzické kopie.');
+                    await alert(error.message || 'Chyba při ukládání fyzické kopie.');
                 }
             } catch (error) {
                 console.error('Error saving physical book:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
 
@@ -1411,7 +1752,7 @@
                 physicalBookHistoryModalEl.show();
             } catch (error) {
                 console.error('Error loading physical book history:', error);
-                alert('Chyba při načítání historie fyzické kopie: ' + error.message);
+                await alert('Chyba při načítání historie fyzické kopie: ' + error.message);
             }
         }
 
@@ -1420,7 +1761,8 @@
             const newState = changePhysicalBookStateEl.value;
             const newStatus = changePhysicalBookStatusEl.value;
 
-            if (!confirm(`Opravdu chcete změnit stav fyzické kopie?`)) {
+            const confirmed = await confirm(`Opravdu chcete změnit stav fyzické kopie?`);
+            if (!confirmed) {
                 return;
             }
 
@@ -1440,15 +1782,15 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert('Stav fyzické kopie byl úspěšně změněn.');
+                    await alert('Stav fyzické kopie byl úspěšně změněn.');
                     physicalBookHistoryModalEl.hide();
                     loadPhysicalBooks(); // Refresh the list
                 } else {
-                    alert(result.message || 'Chyba při změně stavu fyzické kopie.');
+                    await alert(result.message || 'Chyba při změně stavu fyzické kopie.');
                 }
             } catch (error) {
                 console.error('Error updating physical book state:', error);
-                alert('Chyba při komunikaci se serverem.');
+                await alert('Chyba při komunikaci se serverem.');
             }
         }
 
@@ -1528,6 +1870,11 @@
                 return;
             }
             // If no pbId, it could be called from somewhere else, though currently not used that way
+        }
+
+        // Function to handle physical book history with async/await
+        async function handlePhysicalBookHistory(pbId, externalId, state, status) {
+            await viewPhysicalBookHistory(pbId, externalId, state, status);
         }
 
         // Function to switch to the physical books tab and populate with a specific book
