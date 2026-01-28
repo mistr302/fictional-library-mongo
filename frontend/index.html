@@ -22,6 +22,9 @@
                 <button class="nav-link active" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">Knihy</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="physical-books-tab" data-bs-toggle="tab" data-bs-target="#physical-books" type="button" role="tab">Fyzické kopie</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="loans-tab" data-bs-toggle="tab" data-bs-target="#loans" type="button" role="tab">Výpůjčky</button>
             </li>
             <li class="nav-item" role="presentation">
@@ -87,16 +90,57 @@
                                         <input type="text" class="form-control" id="book-genre" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="book-available" class="form-label">Dostupné kopie</label>
-                                        <input type="number" class="form-control" id="book-available" required>
-                                    </div>
-                                    <div class="mb-3">
                                         <label for="book-total" class="form-label">Celkové kopie</label>
                                         <input type="number" class="form-control" id="book-total" required>
                                     </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+                                <button type="button" class="btn btn-primary" id="save-book-btn">Uložit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Books Tab -->
+            <div class="tab-pane fade" id="physical-books" role="tabpanel">
+                <h3>Fyzické kopie knih</h3>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select id="physical-book-book-select" class="form-select">
+                            <option value="">Vyberte hlavní knihu...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="load-physical-books-btn" class="btn btn-primary w-100">Načíst</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="add-physical-book-btn" class="btn btn-success w-100">Přidat fyzickou kopii</button>
+                    </div>
+                </div>
+
+                <div id="physical-books-container">
+                    <!-- Physical books will be loaded here -->
+                </div>
+
+                <!-- Add Physical Book Modal -->
+                <div class="modal fade" id="physicalBookModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="physicalBookModalLabel">Přidat fyzickou kopii</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="physical-book-form">
+                                    <input type="hidden" id="physical-book-parent-id">
+                                    <input type="hidden" id="physical-book-id">
                                     <div class="mb-3">
-                                        <label for="book-state" class="form-label">Stav knihy</label>
-                                        <select class="form-select" id="book-state" required>
+                                        <label for="physical-book-state" class="form-label">Stav</label>
+                                        <select class="form-select" id="physical-book-state" required>
                                             <option value="new">Nová</option>
                                             <option value="like_new">Jako nová</option>
                                             <option value="good" selected>Dobrá</option>
@@ -105,11 +149,67 @@
                                             <option value="damaged">Poškozená</option>
                                         </select>
                                     </div>
+                                    <div class="mb-3">
+                                        <label for="physical-book-status" class="form-label">Stav dostupnosti</label>
+                                        <select class="form-select" id="physical-book-status" required>
+                                            <option value="available" selected>Dostupná</option>
+                                            <option value="borrowed">Vypůjčená</option>
+                                            <option value="damaged">Poškozená</option>
+                                            <option value="lost">Ztracená</option>
+                                        </select>
+                                    </div>
                                 </form>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
-                                <button type="button" class="btn btn-primary" id="save-book-btn">Uložit</button>
+                                <button type="button" class="btn btn-primary" id="save-physical-book-btn">Uložit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Physical Book History Modal -->
+                <div class="modal fade" id="physicalBookHistoryModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Historie fyzické kopie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="physical-book-history-content">
+                                    <!-- History will be loaded here -->
+                                </div>
+
+                                <div class="mt-4">
+                                    <h6>Změnit stav fyzické kopie</h6>
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <select class="form-select" id="change-physical-book-state">
+                                                <option value="new">Nová</option>
+                                                <option value="like_new">Jako nová</option>
+                                                <option value="good" selected>Dobrá</option>
+                                                <option value="acceptable">Přijatelná</option>
+                                                <option value="poor">Slabá</option>
+                                                <option value="damaged">Poškozená</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <select class="form-select" id="change-physical-book-status">
+                                                <option value="available">Dostupná</option>
+                                                <option value="borrowed">Vypůjčená</option>
+                                                <option value="damaged">Poškozená</option>
+                                                <option value="lost">Ztracená</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button id="update-physical-book-state-btn" class="btn btn-primary w-100">Upravit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
                             </div>
                         </div>
                     </div>
@@ -172,7 +272,7 @@
 
             <!-- Book History Tab -->
             <div class="tab-pane fade" id="book-history" role="tabpanel">
-                <h3>Historie výpůjček knih</h3>
+                <h3>Historie a stav knihy</h3>
 
                 <div class="row mb-3">
                     <div class="col-md-12">
@@ -190,8 +290,9 @@
                                     </div>
                                 </div>
 
+
                                 <div id="book-loans-history">
-                                    <p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení výpůjček této knihy</p>
+                                    <p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení historie této knihy</p>
                                 </div>
                             </div>
                         </div>
@@ -290,6 +391,25 @@
         const readerEmailEl = document.getElementById('reader-email');
         const readerIdEl = document.getElementById('reader-id');
 
+        // Physical Books elements
+        const physicalBookBookSelectEl = document.getElementById('physical-book-book-select');
+        const loadPhysicalBooksBtnEl = document.getElementById('load-physical-books-btn');
+        const addPhysicalBookBtnEl = document.getElementById('add-physical-book-btn');
+        const physicalBooksContainerEl = document.getElementById('physical-books-container');
+        const physicalBookModalEl = new bootstrap.Modal(document.getElementById('physicalBookModal'));
+        const physicalBookFormEl = document.getElementById('physical-book-form');
+        const physicalBookParentIdEl = document.getElementById('physical-book-parent-id');
+        const physicalBookIdEl = document.getElementById('physical-book-id');
+        const physicalBookStateEl = document.getElementById('physical-book-state');
+        const physicalBookStatusEl = document.getElementById('physical-book-status');
+        const savePhysicalBookBtnEl = document.getElementById('save-physical-book-btn');
+        const physicalBookHistoryModalEl = new bootstrap.Modal(document.getElementById('physicalBookHistoryModal'));
+        const physicalBookHistoryContentEl = document.getElementById('physical-book-history-content');
+        const changePhysicalBookStateEl = document.getElementById('change-physical-book-state');
+        const changePhysicalBookStatusEl = document.getElementById('change-physical-book-status');
+        const updatePhysicalBookStateBtnEl = document.getElementById('update-physical-book-state-btn');
+
+
         // Current edit state
         let currentBook = null;
         let currentReader = null;
@@ -301,6 +421,7 @@
             loadActiveLoans();
             loadReadersForHistoryDropdown(); // Load readers for history dropdown
             loadBooksForHistoryDropdown(); // Load books for book history dropdown
+            loadBooksForPhysicalBookForm(); // Load books for physical book dropdown
 
             // Event listeners
             document.getElementById('add-book-btn').addEventListener('click', openAddBookModal);
@@ -317,27 +438,47 @@
             // Load books and readers for loan form
             loadBooksForLoanForm();
             loadReadersForLoanForm();
+
+            // Physical books event listeners
+            loadPhysicalBooksBtnEl.addEventListener('click', loadPhysicalBooks);
+            addPhysicalBookBtnEl.addEventListener('click', openAddPhysicalBookModal);
+            savePhysicalBookBtnEl.addEventListener('click', savePhysicalBook);
+            updatePhysicalBookStateBtnEl.addEventListener('click', updatePhysicalBookState);
         });
-        
+
+
+        // Helper function to get state label from value
+        function getBookStateLabel(stateValue) {
+            const stateLabels = {
+                'new': 'Nová',
+                'like_new': 'Jako nová',
+                'good': 'Dobrá',
+                'acceptable': 'Přijatelná',
+                'poor': 'Slabá',
+                'damaged': 'Poškozená'
+            };
+            return stateLabels[stateValue] || stateValue;
+        }
+
         // Load books with filters
         async function loadBooks() {
             const searchTerm = bookSearchEl.value.trim();
             const genre = genreFilterEl.value;
-            
+
             let url = `${API_BASE}/books`;
             const params = new URLSearchParams();
-            
+
             if (searchTerm) params.append('search', searchTerm);
             if (genre) params.append('genre', genre);
-            
+
             if (params.toString()) {
                 url += '?' + params.toString();
             }
-            
+
             try {
                 const response = await fetch(url);
                 const books = await response.json();
-                
+
                 booksListEl.innerHTML = '';
                 books.forEach(book => {
                     // Format book state for display
@@ -364,16 +505,16 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <h5>${book.title}</h5>
+                                        <h5>${book.title} <small class="text-muted">(${book._id.substring(0, 8)}...)</small></h5>
                                         <p class="text-muted mb-1"><strong>Autor:</strong> ${book.author}</p>
                                         <p class="text-muted mb-1"><strong>Rok:</strong> ${book.year}</p>
                                         <p class="text-muted mb-1"><strong>Žánr:</strong> ${book.genre}</p>
                                         <p><strong>Dostupné kopie:</strong> ${book.availableCopies}/${book.totalCopies}</p>
-                                        <p><strong>Stav:</strong> <span class="badge ${stateClass}">${stateDisplay}</span></p>
                                     </div>
                                     <div class="col-md-4 text-end">
                                         <button class="btn btn-sm btn-outline-primary" onclick="editBook('${book._id}')">Upravit</button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteBook('${book._id}')">Smazat</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="viewPhysicalBooks('${book._id}')">Fyzické kopie</button>
                                     </div>
                                 </div>
                             </div>
@@ -469,26 +610,34 @@
             try {
                 const response = await fetch(`${API_BASE}/loans/active`);
                 const loans = await response.json();
-                
+
                 activeLoansListEl.innerHTML = '';
                 if (loans.length === 0) {
                     activeLoansListEl.innerHTML = '<p>Nejsou žádné aktivní výpůjčky.</p>';
                     return;
                 }
-                
+
                 loans.forEach(loan => {
+                    // Extract book and reader details from populated fields
+                    const bookTitle = loan.physicalBookId?.bookId?.title || 'N/A';
+                    const bookAuthor = loan.physicalBookId?.bookId?.author || 'N/A';
+                    const physicalBookId = loan.physicalBookId?.externalId || 'N/A';
+                    const readerName = loan.readerId?.name || 'N/A';
+                    const readerClass = loan.readerId?.class || 'N/A';
+
                     const loanCard = document.createElement('div');
                     loanCard.className = 'card mb-2 loan-active';
                     loanCard.innerHTML = `
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <strong>Kniha:</strong> ${loan.bookId ? loan.bookId.title : 'N/A'}<br>
-                                    <strong>Autor:</strong> ${loan.bookId ? loan.bookId.author : 'N/A'}
+                                    <strong>Kniha:</strong> ${bookTitle}<br>
+                                    <strong>Autor:</strong> ${bookAuthor}<br>
+                                    <strong>ID kopie:</strong> ${physicalBookId}
                                 </div>
                                 <div class="col-md-4">
-                                    <strong>Čtenář:</strong> ${loan.readerId ? loan.readerId.name : 'N/A'}<br>
-                                    <strong>Třída:</strong> ${loan.readerId ? loan.readerId.class : 'N/A'}
+                                    <strong>Čtenář:</strong> ${readerName}<br>
+                                    <strong>Třída:</strong> ${readerClass}
                                 </div>
                                 <div class="col-md-2 text-end">
                                     <button class="btn btn-sm btn-warning" onclick="returnBook('${loan._id}')">Vrátit</button>
@@ -508,7 +657,7 @@
             try {
                 const response = await fetch(`${API_BASE}/books`);
                 const books = await response.json();
-                
+
                 loanBookEl.innerHTML = '<option value="">Vyberte knihu...</option>';
                 books.forEach(book => {
                     if (book.availableCopies > 0) {
@@ -544,24 +693,24 @@
         // Borrow a book
         async function borrowBook(e) {
             e.preventDefault();
-            
+
             const bookId = loanBookEl.value;
             const readerId = loanReaderEl.value;
-            
+
             if (!bookId || !readerId) {
                 alert('Prosím vyberte knihu a čtenáře.');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/loans`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ bookId, readerId })
+                    body: JSON.stringify({ bookId, readerId })  // Backend will pick an available physical book
                 });
-                
+
                 if (response.ok) {
                     alert('Kniha byla úspěšně vypůjčena!');
                     loanFormEl.reset();
@@ -639,11 +788,9 @@
                 author: bookAuthorEl.value,
                 year: parseInt(bookYearEl.value),
                 genre: bookGenreEl.value,
-                availableCopies: parseInt(bookAvailableEl.value),
-                totalCopies: parseInt(bookTotalEl.value),
-                state: bookStateEl.value
+                totalCopies: parseInt(bookTotalEl.value)
             };
-            
+
             try {
                 let response;
                 if (bookIdEl.value) {
@@ -665,11 +812,21 @@
                         body: JSON.stringify(bookData)
                     });
                 }
-                
+
                 if (response.ok) {
                     bookModalEl.hide();
+                    // If it's a new book, create physical copies equal to totalCopies
+                    if (!bookIdEl.value) {
+                        const newBook = await response.json();
+                        await createPhysicalBooks(newBook._id, bookData.totalCopies);
+                    } else {
+                        // If updating existing book, check if totalCopies changed and adjust physical books accordingly
+                        const existingBook = await response.json();
+                        await adjustPhysicalBooks(existingBook._id, bookData.totalCopies);
+                    }
                     loadBooks();
                     loadBooksForLoanForm(); // Refresh the book list in loan form
+                    loadBooksForPhysicalBookForm(); // Refresh the book list in physical book form
                     bookFormEl.reset();
                 } else {
                     const error = await response.json();
@@ -865,8 +1022,8 @@
 
                     loansHtml += `
                         <tr class="${statusClass}">
-                            <td>${loan.bookId ? loan.bookId.title : 'N/A'}</td>
-                            <td>${loan.bookId ? loan.bookId.author : 'N/A'}</td>
+                            <td>${loan.physicalBookId && loan.physicalBookId.bookId ? loan.physicalBookId.bookId.title : 'N/A'}</td>
+                            <td>${loan.physicalBookId && loan.physicalBookId.bookId ? loan.physicalBookId.bookId.author : 'N/A'}</td>
                             <td>${borrowDate}</td>
                             <td>${returnDate}</td>
                             <td><span class="badge bg-${loan.returnDate ? 'success' : 'warning'}">${status}</span></td>
@@ -887,50 +1044,504 @@
             const bookId = bookHistorySelectEl.value;
 
             if (!bookId) {
-                bookLoansHistoryEl.innerHTML = '<p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení výpůjček této knihy</p>';
+                bookLoansHistoryEl.innerHTML = '<p>Vyberte knihu a klikněte na "Zobrazit historii" pro zobrazení historie této knihy</p>';
                 return;
             }
 
             try {
-                // Get all loans for this book (both active and returned)
-                const response = await fetch(`${API_BASE}/books/${bookId}/loans`);
-                const bookLoans = await response.json();
+                // Get the book history combined with loans
+                const historyResponse = await fetch(`${API_BASE}/books/${bookId}/history`);
+                if (!historyResponse.ok) {
+                    bookLoansHistoryEl.innerHTML = '<p>Kniha nebyla nalezena nebo nastala chyba.</p>';
+                    return;
+                }
+                const historyData = await historyResponse.json();
 
-                if (bookLoans.length === 0) {
-                    bookLoansHistoryEl.innerHTML = '<p>Tato kniha nemá žádné výpůjčky.</p>';
+                // Display book info and combined history
+                let historyHtml = `<h5>Informace o knize: ${historyData.book.title}</h5>`;
+                historyHtml += `<p><strong>Autor:</strong> ${historyData.book.author}</p>`;
+                historyHtml += `<p><strong>Rok:</strong> ${historyData.book.year}</p>`;
+                historyHtml += `<p><strong>Žánr:</strong> ${historyData.book.genre}</p>`;
+                historyHtml += `<p><strong>Celkový počet kopií:</strong> ${historyData.physicalBooks ? historyData.physicalBooks.length : 0}</p>`;
+
+                // Display history for each physical copy
+                if (historyData.physicalBooks && historyData.physicalBooks.length > 0) {
+                    historyHtml += '<h6 class="mt-4">Historie jednotlivých fyzických kopií:</h6>';
+
+                    historyData.physicalBooks.forEach((physicalBook, index) => {
+                        historyHtml += `<div class="card mt-3">
+                            <div class="card-header">
+                                <h6>Fyzická kopie #${index + 1}: ${physicalBook.externalId}
+                                    <span class="badge ${getStateBadgeClass(physicalBook.state)} ml-2">${getBookStateLabel(physicalBook.state)}</span>
+                                    <span class="badge ${getStatusBadgeClass(physicalBook.status)} ml-2">${getStatusLabel(physicalBook.status)}</span>
+                                </h6>
+                            </div>
+                            <div class="card-body">`;
+
+                        // Get history for this specific physical book
+                        const physicalBookHistory = historyData.stateHistory.filter(h => h.bookId.toString() === physicalBook._id.toString());
+
+                        // Also get loan/return records for this physical book
+                        const loanRecords = historyData.loanHistory.filter(l => l.physicalBookId._id.toString() === physicalBook._id.toString());
+
+                        // Combine all records and sort by date (newest first)
+                        let allRecords = [];
+
+                        // Add state changes
+                        physicalBookHistory.forEach(record => {
+                            allRecords.push({
+                                timestamp: record.timestamp,
+                                action: record.action,
+                                previousState: record.previousState,
+                                newState: record.newState,
+                                note: record.note,
+                                type: 'state_change'
+                            });
+                        });
+
+                        // Add loan records
+                        loanRecords.forEach(loan => {
+                            allRecords.push({
+                                timestamp: loan.borrowDate,
+                                action: 'loan',
+                                readerName: loan.readerId.name,
+                                readerClass: loan.readerId.class,
+                                type: 'loan',
+                                loanId: loan._id
+                            });
+                        });
+
+                        // Add return records for this book
+                        loanRecords.filter(l => l.returnDate).forEach(loan => {
+                            allRecords.push({
+                                timestamp: loan.returnDate,
+                                action: 'return',
+                                readerName: loan.readerId.name,
+                                type: 'return',
+                                loanId: loan._id
+                            });
+                        });
+
+                        if (allRecords.length > 0) {
+                            historyHtml += '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Datum</th><th>Typ</th><th>Popis</th></tr></thead><tbody>';
+
+                            // Sort history by date (newest first)
+                            const sortedHistory = [...allRecords].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                            sortedHistory.forEach(record => {
+                                let eventTypeLabel = '';
+                                let eventTypeClass = '';
+                                let description = '';
+
+                                if (record.type === 'loan') {
+                                    eventTypeLabel = 'Výpůjčka';
+                                    eventTypeClass = 'table-warning';
+                                    description = `Vypůjčeno čtenáři: ${record.readerName || 'N/A'} (${record.readerClass || 'N/A'})`;
+                                } else if (record.type === 'return') {
+                                    eventTypeLabel = 'Vrácení';
+                                    eventTypeClass = 'table-success';
+                                    description = `Vráceno čtenářem: ${record.readerName || 'N/A'}`;
+                                } else if (record.type === 'state_change') {
+                                    eventTypeLabel = 'Změna stavu';
+                                    eventTypeClass = 'table-info';
+                                    description = `Změna stavu z "${record.previousState ? getBookStateLabel(record.previousState) : 'N/A'}" na "${getBookStateLabel(record.newState)}"${record.note ? ` (${record.note})` : ''}`;
+                                }
+
+                                const dateFormatted = new Date(record.timestamp).toLocaleString('cs-CZ');
+
+                                historyHtml += `
+                                    <tr class="${eventTypeClass}">
+                                        <td>${dateFormatted}</td>
+                                        <td>${eventTypeLabel}</td>
+                                        <td>${description}</td>
+                                    </tr>
+                                `;
+                            });
+
+                            historyHtml += '</tbody></table></div>';
+                        } else {
+                            historyHtml += '<p class="text-muted">Tato fyzická kopie nemá zatím žádnou historii.</p>';
+                        }
+
+                        historyHtml += '</div></div>';
+                    });
+                } else {
+                    historyHtml += '<p class="text-muted">Tato kniha nemá žádné fyzické kopie.</p>';
+                }
+
+                bookLoansHistoryEl.innerHTML = historyHtml;
+            } catch (error) {
+                console.error('Error loading book history:', error);
+                bookLoansHistoryEl.innerHTML = '<p>Chyba při načítání historie knihy.</p>';
+            }
+        }
+
+        // Helper function to get appropriate badge class based on state
+        function getStateBadgeClass(state) {
+            switch (state) {
+                case 'new':
+                case 'like_new':
+                    return 'bg-success';
+                case 'good':
+                    return 'bg-primary';
+                case 'acceptable':
+                    return 'bg-info';
+                case 'poor':
+                    return 'bg-warning';
+                case 'damaged':
+                    return 'bg-danger';
+                default:
+                    return 'bg-secondary';
+            }
+        }
+
+        // Load books for physical book form dropdown
+        async function loadBooksForPhysicalBookForm() {
+            try {
+                const response = await fetch(`${API_BASE}/books`);
+                const books = await response.json();
+
+                physicalBookBookSelectEl.innerHTML = '<option value="">Vyberte hlavní knihu...</option>';
+                books.forEach(book => {
+                    const option = document.createElement('option');
+                    option.value = book._id;
+                    option.textContent = `${book.title} (${book.author})`;
+                    physicalBookBookSelectEl.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading books for physical book form:', error);
+            }
+        }
+
+        // Load physical books for a specific book
+        async function loadPhysicalBooks() {
+            const bookId = physicalBookBookSelectEl.value;
+
+            if (!bookId) {
+                alert('Prosím vyberte hlavní knihu.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/books/${bookId}/physical`);
+                const physicalBooks = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(physicalBooks.message || 'Chyba při načítání fyzických kopií');
+                }
+
+                physicalBooksContainerEl.innerHTML = '';
+
+                if (physicalBooks.length === 0) {
+                    physicalBooksContainerEl.innerHTML = '<p>Pro tuto knihu neexistují žádné fyzické kopie.</p>';
                     return;
                 }
 
-                // Get book info to display title
-                const bookResponse = await fetch(`${API_BASE}/books/${bookId}`);
-                const book = await bookResponse.json();
-
-                let loansHtml = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Čtenář</th><th>Třída</th><th>Email</th><th>Datum vypůjčení</th><th>Datum vrácení</th><th>Status</th></tr></thead><tbody>';
-
-                bookLoans.forEach(loan => {
-                    const borrowDate = new Date(loan.borrowDate).toLocaleDateString('cs-CZ');
-                    const returnDate = loan.returnDate ? new Date(loan.returnDate).toLocaleDateString('cs-CZ') : 'Nevráceno';
-                    const status = loan.returnDate ? 'Vráceno' : 'Vypůjčeno';
-                    const statusClass = loan.returnDate ? 'table-success' : 'table-warning';
-
-                    loansHtml += `
-                        <tr class="${statusClass}">
-                            <td>${loan.readerId ? loan.readerId.name : 'N/A'}</td>
-                            <td>${loan.readerId ? loan.readerId.class : 'N/A'}</td>
-                            <td>${loan.readerId ? loan.readerId.email : 'N/A'}</td>
-                            <td>${borrowDate}</td>
-                            <td>${returnDate}</td>
-                            <td><span class="badge bg-${loan.returnDate ? 'success' : 'warning'}">${status}</span></td>
-                        </tr>
+                physicalBooks.forEach(pb => {
+                    const pbCard = document.createElement('div');
+                    pbCard.className = 'card mb-3';
+                    pbCard.innerHTML = `
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>ID:</strong> ${pb.externalId}<br>
+                                    <strong>Stav:</strong> <span class="badge ${getStateBadgeClass(pb.state)}">${getBookStateLabel(pb.state)}</span><br>
+                                    <strong>Status:</strong> <span class="badge ${getStatusBadgeClass(pb.status)}">${getStatusLabel(pb.status)}</span>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewPhysicalBookHistory('${pb._id}', '${pb.externalId}', '${getBookStateLabel(pb.state)}', '${getStatusLabel(pb.status)}')">Historie</button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="editPhysicalBook('${pb._id}', '${pb.bookId}', '${pb.state}', '${pb.status}')">Upravit</button>
+                                </div>
+                            </div>
+                        </div>
                     `;
+                    physicalBooksContainerEl.appendChild(pbCard);
+                });
+            } catch (error) {
+                console.error('Error loading physical books:', error);
+                alert('Chyba při načítání fyzických kopií: ' + error.message);
+            }
+        }
+
+        // Helper function to get status label
+        function getStatusLabel(status) {
+            const statusLabels = {
+                'available': 'Dostupná',
+                'borrowed': 'Vypůjčená',
+                'damaged': 'Poškozená',
+                'lost': 'Ztracená'
+            };
+            return statusLabels[status] || status;
+        }
+
+        // Helper function to get status badge class
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'available':
+                    return 'bg-success';
+                case 'borrowed':
+                    return 'bg-warning';
+                case 'damaged':
+                    return 'bg-danger';
+                case 'lost':
+                    return 'bg-dark';
+                default:
+                    return 'bg-secondary';
+            }
+        }
+
+        // Open add physical book modal
+        function openAddPhysicalBookModal() {
+            const bookId = physicalBookBookSelectEl.value;
+
+            if (!bookId) {
+                alert('Nejprve vyberte hlavní knihu.');
+                return;
+            }
+
+            physicalBookFormEl.reset();
+            physicalBookParentIdEl.value = bookId;
+            physicalBookIdEl.value = '';
+            document.getElementById('physicalBookModalLabel').textContent = 'Přidat fyzickou kopii';
+            physicalBookModalEl.show();
+        }
+
+        // Edit physical book
+        function editPhysicalBook(pbId, bookId, state, status) {
+            physicalBookParentIdEl.value = bookId;
+            physicalBookIdEl.value = pbId;
+            physicalBookStateEl.value = state;
+            physicalBookStatusEl.value = status;
+            document.getElementById('physicalBookModalLabel').textContent = 'Upravit fyzickou kopii';
+            physicalBookModalEl.show();
+        }
+
+        // Save physical book (add or update)
+        async function savePhysicalBook() {
+            const bookId = physicalBookParentIdEl.value;
+            const pbId = physicalBookIdEl.value;
+
+            const physicalBookData = {
+                state: physicalBookStateEl.value,
+                status: physicalBookStatusEl.value
+            };
+
+            try {
+                let response;
+                if (pbId) {
+                    // Update existing physical book - this would require a custom endpoint
+                    response = await fetch(`${API_BASE}/physical-books/${pbId}/state`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(physicalBookData)
+                    });
+                } else {
+                    // Create new physical book
+                    response = await fetch(`${API_BASE}/books/${bookId}/physical`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(physicalBookData)
+                    });
+                }
+
+                if (response.ok) {
+                    physicalBookModalEl.hide();
+                    loadPhysicalBooks();
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Chyba při ukládání fyzické kopie.');
+                }
+            } catch (error) {
+                console.error('Error saving physical book:', error);
+                alert('Chyba při komunikaci se serverem.');
+            }
+        }
+
+        // View physical book history
+        async function viewPhysicalBookHistory(pbId, externalId, state, status) {
+            try {
+                const response = await fetch(`${API_BASE}/physical-books/${pbId}/history`);
+                const historyData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(historyData.message || 'Chyba při načítání historie');
+                }
+
+                // Load the history data into the modal
+                let historyHtml = `
+                    <h5>Fyzická kopie: ${externalId}</h5>
+                    <p><strong>Stav:</strong> <span class="badge ${getStateBadgeClass(historyData.physicalBook.state)}">${getBookStateLabel(historyData.physicalBook.state)}</span></p>
+                    <p><strong>Status:</strong> <span class="badge ${getStatusBadgeClass(historyData.physicalBook.status)}">${getStatusLabel(historyData.physicalBook.status)}</span></p>
+                    <hr>
+                `;
+
+                if (historyData.stateHistory && historyData.stateHistory.length > 0) {
+                    historyHtml += '<h6>Historie změn:</h6>';
+                    historyHtml += '<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Datum</th><th>Typ</th><th>Popis</th></tr></thead><tbody>';
+
+                    historyData.stateHistory.forEach(change => {
+                        const changeDate = new Date(change.timestamp).toLocaleString('cs-CZ');
+                        const description = `Změna z "${change.previousState ? getBookStateLabel(change.previousState) : 'N/A'}" na "${getBookStateLabel(change.newState)}"${change.note ? ` (${change.note})` : ''}`;
+
+                        historyHtml += `
+                            <tr>
+                                <td>${changeDate}</td>
+                                <td><span class="badge bg-info">Změna stavu</span></td>
+                                <td>${description}</td>
+                            </tr>
+                        `;
+                    });
+
+                    historyHtml += '</tbody></table></div>';
+                } else {
+                    historyHtml += '<p>Tato fyzická kopie nemá zatím žádnou historii.</p>';
+                }
+
+                physicalBookHistoryContentEl.innerHTML = historyHtml;
+
+                // Set up the state update form with the current values
+                changePhysicalBookStateEl.value = historyData.physicalBook.state;
+                changePhysicalBookStatusEl.value = historyData.physicalBook.status;
+                updatePhysicalBookStateBtnEl.onclick = () => updatePhysicalBookStateFromHistoryModal(pbId);
+
+                physicalBookHistoryModalEl.show();
+            } catch (error) {
+                console.error('Error loading physical book history:', error);
+                alert('Chyba při načítání historie fyzické kopie: ' + error.message);
+            }
+        }
+
+        // Update physical book state from history modal
+        async function updatePhysicalBookStateFromHistoryModal(pbId) {
+            const newState = changePhysicalBookStateEl.value;
+            const newStatus = changePhysicalBookStatusEl.value;
+
+            if (!confirm(`Opravdu chcete změnit stav fyzické kopie?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/physical-books/${pbId}/state`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        state: newState,
+                        status: newStatus,
+                        note: `Aktualizace z rozhraní - změna stavu na ${getBookStateLabel(newState)}, status na ${getStatusLabel(newStatus)}`
+                    })
                 });
 
-                loansHtml += '</tbody></table></div>';
-                bookLoansHistoryEl.innerHTML = `<h5>Historie výpůjček: ${book.title}</h5>` + loansHtml;
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Stav fyzické kopie byl úspěšně změněn.');
+                    physicalBookHistoryModalEl.hide();
+                    loadPhysicalBooks(); // Refresh the list
+                } else {
+                    alert(result.message || 'Chyba při změně stavu fyzické kopie.');
+                }
             } catch (error) {
-                console.error('Error loading book history:', error);
-                bookLoansHistoryEl.innerHTML = '<p>Chyba při načítání historie výpůjček knihy.</p>';
+                console.error('Error updating physical book state:', error);
+                alert('Chyba při komunikaci se serverem.');
             }
+        }
+
+        // Function to create multiple physical books at once
+        async function createPhysicalBooks(bookId, count) {
+            // Create each physical book one by one
+            for (let i = 0; i < count; i++) {
+                try {
+                    await fetch(`${API_BASE}/books/${bookId}/physical`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            state: 'good', // Default state
+                            status: 'available' // Default status
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error creating physical book:', error);
+                }
+            }
+        }
+
+        // Function to adjust physical books count to match the totalCopies
+        async function adjustPhysicalBooks(bookId, targetCount) {
+            try {
+                // Get current physical books count
+                const response = await fetch(`${API_BASE}/books/${bookId}/physical`);
+                const currentPhysicalBooks = await response.json();
+
+                const currentCount = currentPhysicalBooks.length;
+
+                if (targetCount > currentCount) {
+                    // Need to create more physical books
+                    const countToAdd = targetCount - currentCount;
+                    for (let i = 0; i < countToAdd; i++) {
+                        await fetch(`${API_BASE}/books/${bookId}/physical`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                state: 'good', // Default state
+                                status: 'available' // Default status
+                            })
+                        });
+                    }
+                } else if (targetCount < currentCount) {
+                    // Need to remove some physical books (only if they are available)
+                    const countToRemove = currentCount - targetCount;
+                    for (let i = 0; i < countToRemove; i++) {
+                        // Find an available physical book to delete
+                        const availableBook = currentPhysicalBooks.find(pb => pb.status === 'available');
+                        if (availableBook) {
+                            await fetch(`${API_BASE}/physical-books/${availableBook._id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error adjusting physical books:', error);
+            }
+        }
+
+        // Wrapper function to update physical book state
+        async function updatePhysicalBookState() {
+            const pbId = physicalBookIdEl.value;
+            if (pbId) {
+                // If we have a pbId, this function was called from the edit modal
+                // We should handle it differently, but since we already handle
+                // updates in savePhysicalBook, we just need to avoid conflicts
+                return;
+            }
+            // If no pbId, it could be called from somewhere else, though currently not used that way
+        }
+
+        // Function to switch to the physical books tab and populate with a specific book
+        function viewPhysicalBooks(bookId) {
+            // Switch to the physical books tab
+            const physicalBooksTab = document.getElementById('physical-books-tab');
+            const physicalBooksTabInstance = new bootstrap.Tab(physicalBooksTab);
+            physicalBooksTabInstance.show();
+
+            // Set the book in the dropdown
+            physicalBookBookSelectEl.value = bookId;
+
+            // Load the physical books for this book
+            loadPhysicalBooks();
         }
     </script>
 </body>
